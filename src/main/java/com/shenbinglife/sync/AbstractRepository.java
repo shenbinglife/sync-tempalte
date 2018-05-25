@@ -29,11 +29,6 @@ public abstract class AbstractRepository<T> implements Repository<T> {
         }
     };
 
-    @Override
-    public void add(T t) {
-
-    }
-
     public void add(T first, T... t) {
         add(first);
         for (T item : t) {

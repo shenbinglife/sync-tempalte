@@ -16,6 +16,13 @@ public class RepositorySyncTemplate<T> implements SyncTemplate<Repository<T>> {
 
     private EqualsHandler<T> equalsHandler = new IgnoreEqual<>();
 
+    public RepositorySyncTemplate() {
+    }
+
+    public RepositorySyncTemplate(SyncStrategy syncStrategy, EqualsHandler<T> equalsHandler) {
+        this.syncStrategy = syncStrategy;
+        this.equalsHandler = equalsHandler;
+    }
 
     @Override
     public void sync(Repository<T> source, Repository<T> target) {

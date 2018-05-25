@@ -44,7 +44,7 @@ public class CollectionRepositoryTest {
         repository.add(123);
 
         assertEquals("respository has 2 item", 2, repository.getAll().size());
-        assertTrue(repository.contains("add"));
+        assertTrue(repository.contains("test"));
         assertTrue(repository.contains(123));
         System.out.println(repository);
     }

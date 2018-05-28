@@ -3,6 +3,8 @@ package com.shenbinglife.sync;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.shenbinglife.sync.function.BiFunction;
+
 /**
  * 类名
  *
@@ -26,7 +28,7 @@ public class CachedRepository<T> extends AbstractRepository<T> implements Reposi
     @Override
     public void add(T t) {
         repository.add(t);
-        if(reloadOnAction) {
+        if (reloadOnAction) {
             reloadCache();
         } else {
             cache.add(t);
@@ -34,16 +36,17 @@ public class CachedRepository<T> extends AbstractRepository<T> implements Reposi
     }
 
     /**
-     * if reloadAction == false, then this remove depend on item's equals method because of using remove form java.util.List
+     * if reloadAction == false, then this remove depend on item's equals method because of using remove form
+     * java.util.List
      */
     @Override
     public void remove(T t) {
         repository.remove(t);
-        if(reloadOnAction) {
+        if (reloadOnAction) {
             reloadCache();
         } else {
-            for(T item : cache) {
-                if(equaler.map(item, t)){
+            for (T item : cache) {
+                if (getEqualer().map(item, t)) {
                     cache.remove(item);
                     break;
                 }
@@ -61,12 +64,18 @@ public class CachedRepository<T> extends AbstractRepository<T> implements Reposi
 
     @Override
     public boolean contains(T t) {
-        for(T item : cache) {
-            if(equaler.map(item, t)) {
+        for (T item : cache) {
+            if (getEqualer().map(item, t)) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public BiFunction<T, T, Boolean> getEqualer() {
+        return repository instanceof AbstractRepository ? ((AbstractRepository<T>) repository).getEqualer()
+                        : super.getEqualer();
     }
 
     public List<T> reloadCache() {

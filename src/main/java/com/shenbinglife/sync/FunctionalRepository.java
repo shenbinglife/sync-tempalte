@@ -22,11 +22,13 @@ public class FunctionalRepository<T> extends AbstractRepository<T> implements Re
 
     private Consumer<T> remover;
 
+    private BiFunction<T, T, Boolean> equaler;
+
     public FunctionalRepository(Supplier<List<T>> supplier, Consumer<T> adder, Consumer<T> remover) {
         this.supplier = supplier;
         this.adder = adder;
         this.remover = remover;
-        equaler = new BiFunction<T, T, Boolean>() {
+        this.equaler = new BiFunction<T, T, Boolean>() {
             @Override
             public Boolean map(T t, T t2) {
                 return Objects.equals(t, t2);
@@ -66,5 +68,10 @@ public class FunctionalRepository<T> extends AbstractRepository<T> implements Re
             }
         }
         return false;
+    }
+
+    @Override
+    public BiFunction<T, T, Boolean> getEqualer() {
+        return equaler;
     }
 }

@@ -28,12 +28,12 @@ public class RepositorySyncTemplate<T> implements SyncTemplate<Repository<T>> {
     public void sync(Repository<T> source, Repository<T> target) {
         switch (syncStrategy) {
             case PUSH_LOCAL: {
-                pushLocal(source, target);
+                pushLocal(source, target, this.equalsHandler);
             }
                 break;
 
             case PULL_REMOTE:
-                this.pushLocal(target, source);
+                this.pushLocal(target, source, this.equalsHandler);
                 break;
 
             case PULL_AND_PUSH: {
@@ -60,21 +60,34 @@ public class RepositorySyncTemplate<T> implements SyncTemplate<Repository<T>> {
         }
     }
 
-    private void pushLocal(Repository<T> source, Repository<T> target) {
-        List<T> retain = RepositoryUtils.retain(source, target);
-        if (retain.isEmpty()) {
-            RepositoryUtils.addAll(target, source.getAll());
-        } else {
-            List<T> sourceItems = source.getAll();
-            List<T> sourceItemsCache = new ArrayList<>(sourceItems);
-            List<T> targetItems = target.getAll();
-            sourceItems.removeAll(targetItems);
+    public void sync(Repository<T> source, Repository<T> target, EqualsHandler<T> handler) {
+        RepositorySyncTemplate<T> re = new RepositorySyncTemplate<>(this.syncStrategy, handler);
+        re.sync(source, target);
+    }
 
-            RepositoryUtils.addAll(target, sourceItems);
+    public static <T> void sync(Repository<T> source, Repository<T> target, SyncStrategy strategy, EqualsHandler<T> handler) {
+        RepositorySyncTemplate<T> re = new RepositorySyncTemplate<>(strategy, handler);
+        re.sync(source, target);
+    }
 
-            targetItems.retainAll(sourceItemsCache);
-            equalsHandler.handler(source, retain, target, targetItems);
+    private void pushLocal(Repository<T> source, Repository<T> target, EqualsHandler<T> equalsHandler) {
+        List<T> sourceR = new ArrayList<>();
+        List<T> targetR = new ArrayList<>();
+        for(T sourceI : source.getAll()) {
+            if(target.contains(sourceI)) {
+                sourceR.add(sourceI);
+            } else {
+                target.add(sourceI);
+            }
         }
+        for(T targetI : target.getAll()) {
+            if(source.contains(targetI)) {
+                targetR.add(targetI);
+            } else {
+                target.remove(targetI);
+            }
+        }
+        equalsHandler.handler(source, sourceR, target, targetR);
     }
 
     public SyncStrategy getSyncStrategy() {

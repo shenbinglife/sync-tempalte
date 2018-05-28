@@ -15,19 +15,11 @@ import com.shenbinglife.sync.function.BiFunction;
  */
 public abstract class AbstractRepository<T> implements Repository<T> {
 
-    public AbstractRepository() {
-    }
+    public AbstractRepository() {}
 
-    public AbstractRepository(BiFunction<T, T, Boolean> equaler) {
-        this.equaler = equaler;
+    public CachedRepository<T> cachedRepository() {
+        return new CachedRepository<>(this);
     }
-
-    protected BiFunction<T, T, Boolean> equaler = new BiFunction<T, T, Boolean>() {
-        @Override
-        public Boolean map(T t, T t2) {
-            return Objects.equals(t, t2);
-        }
-    };
 
     public void add(T first, T... t) {
         add(first);
@@ -61,7 +53,7 @@ public abstract class AbstractRepository<T> implements Repository<T> {
     public boolean contains(T t) {
         List<T> all = getAll();
         for (T item : all) {
-            if (equaler.map(item, t)) {
+            if (getEqualer().map(item, t)) {
                 return true;
             }
         }
@@ -84,8 +76,8 @@ public abstract class AbstractRepository<T> implements Repository<T> {
      * remove all which equals target
      */
     private void removeAll(T t) {
-        for(T item : getAll()) {
-            if(equaler.map(item, t)) {
+        for (T item : getAll()) {
+            if (getEqualer().map(item, t)) {
                 this.remove(item);
             }
         }
@@ -99,7 +91,7 @@ public abstract class AbstractRepository<T> implements Repository<T> {
         List<T> result = new ArrayList<>(all.size());
         for (T item : all) {
             for (T compare : list) {
-                if (equaler.map(item, compare)) {
+                if (getEqualer().map(item, compare)) {
                     result.add(item);
                     break;
                 }
@@ -116,7 +108,7 @@ public abstract class AbstractRepository<T> implements Repository<T> {
         List<T> result = new ArrayList<>(all.size());
         for (T item : all) {
             for (T compare : target.getAll()) {
-                if (equaler.map(item, compare)) {
+                if (getEqualer().map(item, compare)) {
                     result.add(item);
                     break;
                 }
@@ -126,11 +118,12 @@ public abstract class AbstractRepository<T> implements Repository<T> {
     }
 
     public BiFunction<T, T, Boolean> getEqualer() {
-        return equaler;
-    }
-
-    public void setEqualer(BiFunction<T, T, Boolean> equaler) {
-        this.equaler = equaler;
+        return new BiFunction<T, T, Boolean>() {
+            @Override
+            public Boolean map(T t, T t2) {
+                return Objects.equals(t, t2);
+            }
+        };
     }
 
     @Override

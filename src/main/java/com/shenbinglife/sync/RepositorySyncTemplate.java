@@ -33,7 +33,7 @@ public class RepositorySyncTemplate<T> implements SyncTemplate<Repository<T>> {
                 break;
 
             case PULL_REMOTE:
-                this.pushLocal(target, source, this.equalsHandler);
+                this.pushLocal(target, source, reverse(this.equalsHandler));
                 break;
 
             case PULL_AND_PUSH: {
@@ -88,6 +88,15 @@ public class RepositorySyncTemplate<T> implements SyncTemplate<Repository<T>> {
             }
         }
         equalsHandler.handler(source, sourceR, target, targetR);
+    }
+
+    private EqualsHandler<T> reverse(final EqualsHandler<T> handler) {
+        return new EqualsHandler<T>() {
+            @Override
+            public void handler(Repository<T> source, List<T> equaledSource, Repository<T> target, List<T> equaledTarget) {
+                handler.handler(target, equaledTarget, source, equaledSource);
+            }
+        };
     }
 
     public SyncStrategy getSyncStrategy() {
